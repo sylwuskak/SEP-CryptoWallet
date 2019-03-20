@@ -13,17 +13,14 @@
       %th Balance
       %th
   %tbody
-    %tr
-      %td 0xEc690940081E780ae3310C88eb3f4C75622988eC
-      %td 4
-      %td 0.00558 ETH
-      %td= link_to 'Show', wallets_show_path
-    %tr
-      %td 0xAcf98E3Fe9dA1bEEFae9a166bB70Ff738e246d06
-      %td 56
-      %td 0.226155642 ETH
-      %td= link_to 'Show', wallets_show_path
-= link_to 'Add Wallet', wallets_new_path, class: 'button'
+    -@wallets_data.each do |wallet_data|
+      - wallet = @wallets.where(address: wallet_data["account"]).first
+      %tr
+        %td=wallet_data["account"]
+        %td wallet_data.number_of_transactions
+        %td=((wallet_data["balance"].to_f)/10**18).to_s + " ETH"
+        %td= link_to 'Show', wallet_path(wallet.id)
+= link_to 'Add Wallet', new_wallet_path, class: 'button'
 
 
 

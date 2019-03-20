@@ -1,14 +1,15 @@
 Rails.application.routes.draw do
   get 'home/index'
-  get 'home/wallets_index', as: :wallets_index
-  get 'home/wallets_show', as: :wallets_show
-  get 'home/wallets_new', as: :wallets_new
+
+  resources :wallets, only: [:create, :new, :show, :index, :destroy, :update] do
+    
+  end
 
   devise_for :users
 
   devise_scope :user do
     authenticated :user do
-      root to: 'home#wallets_index', as: :unauthenticated_root
+      root to: 'wallets#index', as: :unauthenticated_root
     end
 
     unauthenticated :user do

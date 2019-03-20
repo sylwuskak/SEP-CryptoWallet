@@ -1,0 +1,8 @@
+.layout__content
+  %h2 Create wallet
+  = form_for :wallet, url: wallets_path, turboboost: true, method: :post  do |f|
+    .form-group
+      %p= f.label :address, "Wallet address"
+      %p= f.text_field :address, class: 'form-control'
+
+    %button.btn.custom-btn{:type=>"submit"} Add Wallet 

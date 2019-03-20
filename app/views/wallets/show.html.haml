@@ -1,0 +1,56 @@
+- if user_signed_in?
+  = link_to('Logout', destroy_user_session_path, method: :delete, class: 'button--logout')
+- else
+  = link_to('Login', new_user_session_path, class: 'button--logout')
+%h3="Transactions for " + @wallet.address 
+
+.row.stats
+  .column
+    %strong Summary:
+  .column
+    %strong=@wallet_data.length
+    Transactions
+  .column
+    -# TODO: Remember to change currency symbol
+    %strong 0.00558 ETH
+    Balance
+
+%table
+  %thead
+    %tr
+      %th Details
+      -# TODO: Remember to change currency symbol
+      %th Amount (ETH)
+      %th Fee (ETH)
+      %th Date
+  %tbody
+    - @wallet_data.each do |trans|
+      - transaction_outcoming = trans["to"].upcase == @wallet.address.upcase
+      
+      %tr{:class=>transaction_outcoming ? "transaction-outcoming" : "transaction-incoming"}
+        %td
+          %i.fas{:class=> transaction_outcoming ? "fa-arrow-down" : "fa-arrow-up"}
+          - if transaction_outcoming
+            Transfer to
+            = trans["to"]
+          - else
+            Transfer from
+            = trans["from"]
+        %td 
+          = trans["value"].to_f/(10**18)
+          ETH
+        %td 
+          = trans["gas"].to_f/(10**8)
+          ETH
+        %td 
+          = time_ago_in_words(DateTime.strptime(trans["timeStamp"],'%s')) + " ago"
+    
+        
+    
+= link_to 'Change currency to PLN', wallet_path, class: 'button'
+= link_to 'Back to your wallets', wallets_path
+|
+= link_to 'Remove wallet', wallets_path
+
+
+
