@@ -3,7 +3,7 @@
 - else
   = link_to('Login', new_user_session_path, class: 'button--logout')
 %h3="Transactions for " + @wallet.address 
-
+- currency = params["currency"] ? params["currency"] : "ETH"
 .row.stats
   .column
     %strong Summary:
@@ -11,17 +11,19 @@
     %strong=@wallet_data.length
     Transactions
   .column
-    -# TODO: Remember to change currency symbol
-    %strong 0.00558 ETH
+    %strong 
+      =@balance 
+      =currency
     Balance
-
+  
 %table
   %thead
     %tr
       %th Details
-      -# TODO: Remember to change currency symbol
-      %th Amount (ETH)
-      %th Fee (ETH)
+      %th
+        ="Amount (" + currency + ")"
+      %th 
+        ="Fee (" + currency + ")"
       %th Date
   %tbody
     - @wallet_data.each do |trans|
@@ -38,19 +40,20 @@
             = trans["from"]
         %td 
           = trans["value"].to_f/(10**18)
-          ETH
+          =currency
         %td 
           = trans["gas"].to_f/(10**8)
-          ETH
+          =currency
         %td 
           = time_ago_in_words(DateTime.strptime(trans["timeStamp"],'%s')) + " ago"
     
-        
-    
-= link_to 'Change currency to PLN', wallet_path, class: 'button'
+- if params['currency'] == 'PLN'
+  = link_to 'Change currency to ETH', wallet_path, class: 'button'
+- else
+  = link_to 'Change currency to PLN', params.permit().merge({:currency => 'PLN'}), class: 'button'
 = link_to 'Back to your wallets', wallets_path
 |
-= link_to 'Remove wallet', wallets_path
+= button_to 'Remove wallet', wallet_path(@wallet)
 
 
 

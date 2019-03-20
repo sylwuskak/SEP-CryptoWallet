@@ -6,11 +6,15 @@ class WalletsController < ApplicationController
   def index
     @wallets = current_user.wallets
     @wallets_data = wallets_data(@wallets.map{|w| w.address})
+    @transactions_numbers = @wallets.map do |wallet|
+        [wallet.address, wallet_data(wallet.address).length]
+    end.to_h
   end
 
   def show
     @wallet = Wallet.find params["id"]
     @wallet_data = wallet_data(@wallet.address)
+    @balance = (wallets_data([@wallet.address]).first["balance"].to_f)/10**18
   end
 
   def new
@@ -29,7 +33,8 @@ class WalletsController < ApplicationController
   end
 
   def destroy
-
+    Wallet.destroy(params[:id])
+    redirect_to wallets_path
   end
 
   def wallets_data(wallets_addresses)
@@ -37,7 +42,13 @@ class WalletsController < ApplicationController
     uri = URI(url)
     response = Net::HTTP.get(uri)
 
-    JSON.parse(response).try(:[], "result")
+    result = JSON.parse(response).try(:[], "result")
+    if params["currency"] == "PLN"
+        result.each do |transaction|
+            transaction["balance"] = transaction["balance"].to_f * 516.87
+        end
+    end
+    result
   end
 
   def wallet_data(wallet_address)
@@ -45,9 +56,16 @@ class WalletsController < ApplicationController
     uri = URI(url)
     response = Net::HTTP.get(uri)
 
-    # byebug
+    result = JSON.parse(response).try(:[], "result")
 
-    JSON.parse(response).try(:[], "result")
+    if params["currency"] == "PLN"
+        result.each do |transaction|
+            transaction["value"] = transaction["value"].to_f * 516.87
+            transaction["gas"] = transaction["gas"].to_f * 516.87
+        end
+    end
+    
+    result
 end
 
   private
