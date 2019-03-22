@@ -1,20 +1,18 @@
 class WalletsController < ApplicationController
   before_action :authenticate_user!
+  before_action :correct_user, only: [:show, :destroy]
   require 'net/http'
   require 'json'
 
   def index
-    @wallets = current_user.wallets
-    @wallets_data = wallets_data(@wallets.map{|w| w.address})
-    @transactions_numbers = @wallets.map do |wallet|
-        [wallet.address, wallet_data(wallet.address).length]
-    end.to_h
+    @wallets = current_user.wallets.order(id: :desc)
+    @wallets_data = Wallet.wallets_data(@wallets.map{|w| w.address}, params["currency"])
   end
 
   def show
     @wallet = Wallet.find params["id"]
-    @wallet_data = wallet_data(@wallet.address)
-    @balance = (wallets_data([@wallet.address]).first["balance"].to_f)/10**18
+    @wallet_data = @wallet.wallet_data(params["currency"])
+    @balance = (Wallet.wallets_data([@wallet.address], params["currency"]).first["balance"].to_f)/10**18
   end
 
   def new
@@ -37,39 +35,13 @@ class WalletsController < ApplicationController
     redirect_to wallets_path
   end
 
-  def wallets_data(wallets_addresses)
-    url = "https://api.etherscan.io/api?module=account&action=balancemulti&address=" + wallets_addresses.join(',') + "&tag=latest"
-    uri = URI(url)
-    response = Net::HTTP.get(uri)
-
-    result = JSON.parse(response).try(:[], "result")
-    if params["currency"] == "PLN"
-        result.each do |transaction|
-            transaction["balance"] = transaction["balance"].to_f * 516.87
-        end
-    end
-    result
-  end
-
-  def wallet_data(wallet_address)
-    url = "http://api.etherscan.io/api?module=account&action=txlist&address=" + wallet_address + "&startblock=0&endblock=99999999&sort=asc"
-    uri = URI(url)
-    response = Net::HTTP.get(uri)
-
-    result = JSON.parse(response).try(:[], "result")
-
-    if params["currency"] == "PLN"
-        result.each do |transaction|
-            transaction["value"] = transaction["value"].to_f * 516.87
-            transaction["gas"] = transaction["gas"].to_f * 516.87
-        end
-    end
-    
-    result
-end
-
   private
     def wallet_params
       params.require(:wallet).permit(:address)
+    end
+
+    def correct_user
+      @wallet = current_user.wallets.find_by(id: params[:id])
+      redirect_to wallets_path, notice: "You are not allowed to show/delete this wallet" if @wallet.nil?
     end
 end

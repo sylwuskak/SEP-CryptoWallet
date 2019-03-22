@@ -13,15 +13,12 @@
       %th Balance
       %th
   %tbody
-    - if !@wallets_data.is_a? String
-      -@wallets_data.each do |wallet_data|
-        - wallet = @wallets.where(address: wallet_data["account"]).first
+    - if !@wallets.empty?
+      -@wallets.each do |wallet|
+        - wallet_data = @wallets_data.is_a?(String) ? @wallets_data : @wallets_data.select{|wd| wd["account"]==wallet.address}.first 
         %tr
-          %td=wallet_data["account"]
-          %td=@transactions_numbers[wallet_data["account"]]
-          %td=((wallet_data["balance"].to_f)/10**18).to_s + " ETH"
+          %td=wallet.address
+          %td=wallet.wallet_data(nil).length
+          %td=@wallets_data.is_a?(String) ? @wallets_data : ((wallet_data["balance"].to_f)/10**18).to_s + " ETH"
           %td= link_to 'Show', wallet_path(wallet.id)
 = link_to 'Add Wallet', new_wallet_path, class: 'button'
-
-
-

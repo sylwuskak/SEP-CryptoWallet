@@ -1,5 +1,5 @@
 .home
   %h1 CryptoWallet
-  %p Serving 1000+ active wallets
+  %p="Serving " + @wallet_number.to_s + " active wallets"
 
   = link_to 'LOGIN NOW', new_user_session_path, class: 'button'

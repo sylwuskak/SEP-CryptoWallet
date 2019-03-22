@@ -26,26 +26,30 @@
         ="Fee (" + currency + ")"
       %th Date
   %tbody
-    - @wallet_data.each do |trans|
-      - transaction_outcoming = trans["to"].upcase == @wallet.address.upcase
-      
-      %tr{:class=>transaction_outcoming ? "transaction-outcoming" : "transaction-incoming"}
-        %td
-          %i.fas{:class=> transaction_outcoming ? "fa-arrow-down" : "fa-arrow-up"}
-          - if transaction_outcoming
-            Transfer to
-            = trans["to"]
-          - else
-            Transfer from
-            = trans["from"]
-        %td 
-          = trans["value"].to_f/(10**18)
-          =currency
-        %td 
-          = trans["gas"].to_f/(10**8)
-          =currency
-        %td 
-          = time_ago_in_words(DateTime.strptime(trans["timeStamp"],'%s')) + " ago"
+    - if @wallet_data.is_a? String 
+      %tr
+        %td{:colspan => "4"}=@wallet_data
+    - else
+      - @wallet_data.each do |trans|
+        - transaction_outcoming = trans["from"].upcase == @wallet.address.upcase
+        
+        %tr{:class=>transaction_outcoming ? "transaction-outcoming" : "transaction-incoming"}
+          %td
+            %i.fas{:class=> transaction_outcoming ? "fa-arrow-down" : "fa-arrow-up"}
+            - if transaction_outcoming
+              Transfer to
+              = trans["to"]
+            - else
+              Transfer from
+              = trans["from"]
+          %td 
+            = trans["value"].to_f/(10**18)
+            =currency
+          %td 
+            = trans["gas"].to_f/(10**8)
+            =currency
+          %td 
+            = time_ago_in_words(DateTime.strptime(trans["timeStamp"],'%s')) + " ago"
     
 - if params['currency'] == 'PLN'
   = link_to 'Change currency to ETH', wallet_path, class: 'button'
@@ -53,7 +57,7 @@
   = link_to 'Change currency to PLN', params.permit().merge({:currency => 'PLN'}), class: 'button'
 = link_to 'Back to your wallets', wallets_path
 |
-= button_to 'Remove wallet', wallet_path(@wallet)
+= button_to 'Remove wallet', wallet_path(@wallet), method: :delete
 
 
 
