@@ -10,9 +10,10 @@ class Wallet < ApplicationRecord
         result = JSON.parse(response).try(:[], "result")
 
         if currency == "PLN"
+            rate = Wallet.exchange_rate
             result.each do |transaction|
-                transaction["value"] = transaction["value"].to_f * 516.87
-                transaction["gas"] = transaction["gas"].to_f * 516.87
+                transaction["value"] = (transaction["value"].to_f * rate).round(2)
+                transaction["gas"] = (transaction["gas"].to_f * rate).round(2)
             end
         end
         
@@ -35,10 +36,21 @@ class Wallet < ApplicationRecord
     
         result = JSON.parse(response).try(:[], "result")
         if currency == "PLN"
+            rate = Wallet.exchange_rate
             result.each do |transaction|
-                transaction["balance"] = transaction["balance"].to_f * 516.87
+                transaction["balance"] = (transaction["balance"].to_f * rate).round(2)
             end
         end
         result
-      end
+    end
+
+    private
+
+    def self.exchange_rate
+        url = "https://www.bitmarket.pl/json/ETHPLN/ticker.json"
+        uri = URI(url)
+        response = Net::HTTP.get(uri)
+    
+        result = JSON.parse(response).try(:[], "vwap").to_f
+    end
 end
