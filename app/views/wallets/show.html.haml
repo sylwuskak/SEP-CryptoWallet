@@ -31,25 +31,25 @@
         %td{:colspan => "4"}=@wallet_data
     - else
       - @wallet_data.each do |trans|
-        - transaction_outcoming = trans["from"].upcase == @wallet.address.upcase
+        - transaction_outcoming = trans.from.upcase == @wallet.address.upcase
         
         %tr{:class=>transaction_outcoming ? "transaction-outcoming" : "transaction-incoming"}
           %td
             %i.fas{:class=> transaction_outcoming ? "fa-arrow-down" : "fa-arrow-up"}
             - if transaction_outcoming
               Transfer to
-              = trans["to"]
+              = trans.to
             - else
               Transfer from
-              = trans["from"]
+              = trans.from
           %td 
-            = trans["value"].to_f/(10**18)
+            = trans.value.to_f/(10**18)
             =currency
           %td 
-            = trans["gas"].to_f/(10**8)
+            = trans.gas.to_f/(10**8)
             =currency
           %td 
-            = time_ago_in_words(DateTime.strptime(trans["timeStamp"],'%s')) + " ago"
+            = time_ago_in_words(DateTime.strptime(trans.timeStamp,'%s')) + " ago"
     
 - if params['currency'] == 'PLN'
   = link_to 'Change currency to ETH', wallet_path, class: 'button'

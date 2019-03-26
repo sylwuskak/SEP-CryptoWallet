@@ -16,7 +16,16 @@ class Wallet < ApplicationRecord
             end
         end
         
-        result
+        result.map do |tr|
+            new_tr = Hash.new
+            new_tr["from"] = tr["from"]
+            new_tr["to"] = tr["to"]
+            new_tr["value"] = tr["value"]
+            new_tr["gas"] = tr["gas"]
+            new_tr["timeStamp"] = tr["timeStamp"]
+            Transaction.new(new_tr)
+        end
+
     end
 
     def self.wallets_data(wallets_addresses, currency)
